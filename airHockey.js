@@ -76,11 +76,40 @@ function Disk() {
     line(this.x, this.y, this.x+cos(this.angle)*100, this.y+sin(this.angle)*100);
   }
  
-  this.collision = function() {
+  this.collisionOld = function() { 
     p = p1;
     if(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
       this.angle += PI/2;
       this.speed = 5;
+      //background(255, 255, 0);
+    }
+    while(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
+      this.move();
+    }
+  }
+  
+  this.collision = function() { 
+    p = p1;
+    if(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
+      var vxP1, vyP1, vxD, vYD, vxR, vyR;
+      vxP1 = cos(p.getAngle()) * p.getSpeed();
+      vyP1 = sin(p.getAngle()) * p.getSpeed();
+      vxD = cos(this.angle) * this.speed;
+      vyD = sin(this.angle) * this.speed;
+      vxR = vxP1 + vxD - this.x;
+      vyR = vyP1 + vyD - this.y;
+      print("1|"+vxP1+"|");
+      print("2|"+vyP1+"|");
+      print("3|"+vxD+"|");
+      print("4|"+vyD+"|");
+      print("5|"+vxR+"|");
+      print("6|"+vyR+"|");
+      
+      this.angle = atan2(vyR, vxR);
+      debugPrints();
+      noLoop();
+      //this.angle += PI/2;//mudar
+      this.speed = 5;//mudar
       //background(255, 255, 0);
     }
     while(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
@@ -116,6 +145,11 @@ function Player() {
   
   this.getAngle = function() {
     return atan2(this.y - this.old_y, this.x - this.old_x);
+
+  }
+  
+  this.getSpeed = function() {
+    return sqrt(((this.x-this.old_x)*(this.x-this.old_x)) + ((this.y-this.old_y)*(this.y-this.old_y)));
   }
 };
 
@@ -129,10 +163,12 @@ function mouseReleased() {
 */
 
 function debugPrints() {
-    text("Sin:"+sin(disk.angle), 10,10);
-    text("Cos:"+cos(disk.angle), 10,30);
-    text("velY:"+sin(disk.angle)*disk.speed, 10,50);
-    text("velX:"+cos(disk.angle)*disk.speed, 10,70);
-    text("spd:"+disk.speed, 10,90);
-    text("playerAngle:"+degrees(p1.getAngle()), 10,110);
+    text("Sin:"+sin(disk.angle), 10, 10);
+    text("Cos:"+cos(disk.angle), 10, 30);
+    text("velY:"+sin(disk.angle)*disk.speed, 10, 50);
+    text("velX:"+cos(disk.angle)*disk.speed, 10, 70);
+    text("spd:"+disk.speed, 10, 90);
+    text("angle:"+disk.angle, 10, 110);
+    text("playerAngle:"+p1.getAngle(), 10, 130);
+    text("playerSpeed:"+p1.getSpeed(), 10, 150);
 }
