@@ -1,15 +1,12 @@
 var p1, disk;
  
 function setup() {
-  createCanvas(640, 480);
+  createCanvas(800, 500);
   p1 = new Player();
   disk = new Disk();
 }
  
 function draw() {
-  /*if(mousePressed()) {
-    noLoop();
-  }*/
   background(0);
   p1.update();
   disk.move();
@@ -19,8 +16,8 @@ function draw() {
  
   fill(255);
   disk.show();
+  debugPrints();
 }
- 
  
 function Disk() {
   this.x = width/2;
@@ -31,11 +28,6 @@ function Disk() {
   this.decSpd = 0.001;
  
   this.move = function() {
-    text("Sin:"+sin(this.angle), 10,10);
-    text("Cos:"+cos(this.angle), 10,30);
-    text("velY:"+sin(this.angle)*this.speed, 10,50);
-    text("velX:"+cos(this.angle)*this.speed, 10,70);
-    text("spd:"+this.speed, 10,90);
     if(this.speed > 0) {
       this.speed -= this.decSpd;
     }
@@ -76,6 +68,12 @@ function Disk() {
  
   this.show = function() {
     ellipse(this.x, this.y, this.radius, this.radius);
+    this.showDirection();
+  }
+  
+  this.showDirection = function() {
+    stroke(255, 255, 0);
+    line(this.x, this.y, this.x+cos(this.angle)*100, this.y+sin(this.angle)*100);
   }
  
   this.collision = function() {
@@ -83,7 +81,10 @@ function Disk() {
     if(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
       this.angle += PI/2;
       this.speed = 5;
-      background(255, 255, 0);
+      //background(255, 255, 0);
+    }
+    while(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
+      this.move();
     }
   }
 };
@@ -91,14 +92,47 @@ function Disk() {
 function Player() {
   this.x = width/2;
   this.y = height/2;
+  this.old_x = this.x;
+  this.old_y = this.y;
   this.radius = 50;
  
   this.update = function() {
+    this.old_x = this.x;
+    this.old_y = this.y;
     this.x = mouseX;
     this.y = mouseY;
   }
  
   this.show = function() {
     ellipse(this.x, this.y, this.radius, this.radius);
+    this.showDirection();
+  }
+  
+  this.showDirection = function() {
+    stroke(255, 255, 0);
+    line(this.x, this.y, this.x+cos(this.getAngle())*100, this.y+sin(this.getAngle())*100);
+  }
+  
+  
+  this.getAngle = function() {
+    return atan2(this.y - this.old_y, this.x - this.old_x);
   }
 };
+
+function mousePressed() {
+  noLoop();
+}
+/*
+function mouseReleased() {
+  loop();
+}
+*/
+
+function debugPrints() {
+    text("Sin:"+sin(disk.angle), 10,10);
+    text("Cos:"+cos(disk.angle), 10,30);
+    text("velY:"+sin(disk.angle)*disk.speed, 10,50);
+    text("velX:"+cos(disk.angle)*disk.speed, 10,70);
+    text("spd:"+disk.speed, 10,90);
+    text("playerAngle:"+degrees(p1.getAngle()), 10,110);
+}
