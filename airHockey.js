@@ -34,33 +34,12 @@ function Disk() {
     if(this.speed <=0) {
       this.speed = 0;
     }
+ 
     if(this.x + this.speed * cos(this.angle) < this.radius/2 || this.x + this.speed * cos(this.angle) > width-this.radius/2) {
-      if(sin(this.angle) > 0 && cos(this.angle) > 0) {//1o quadrante
-        this.angle += PI/2;
-      }
-      else if(sin(this.angle) > 0 && cos(this.angle) < 0) {//2o quadrante
-        this.angle -= PI/2;
-      }
-      else if(sin(this.angle) < 0 && cos(this.angle) < 0) {//3o quadrante
-        this.angle += PI/2;
-      }
-      else if(sin(this.angle) < 0 && cos(this.angle) > 0) {//4o quadrante
-        this.angle -= PI/2;
-      }
+      this.angle = this.reflect(PI/2);
     }
     if(this.y + this.speed * sin(this.angle) < this.radius/2 || this.y + this.speed * sin(this.angle) > height-this.radius/2) {
-      if(sin(this.angle) > 0 && cos(this.angle) > 0) {//1o quadrante
-        this.angle -= PI/2;
-      }
-      else if(sin(this.angle) > 0 && cos(this.angle) < 0) {//2o quadrante
-        this.angle += PI/2;
-      }
-      else if(sin(this.angle) < 0 && cos(this.angle) < 0) {//3o quadrante
-        this.angle -= PI/2;
-      }
-      else if(sin(this.angle) < 0 && cos(this.angle) > 0) {//4o quadrante
-        this.angle += PI/2;
-      }
+      this.angle = this.reflect(PI);
     }
     this.x += this.speed * cos(this.angle);
     this.y += this.speed * sin(this.angle);
@@ -70,13 +49,13 @@ function Disk() {
     ellipse(this.x, this.y, this.radius, this.radius);
     this.showDirection();
   }
-  
+ 
   this.showDirection = function() {
     stroke(255, 255, 0);
     line(this.x, this.y, this.x+cos(this.angle)*100, this.y+sin(this.angle)*100);
   }
  
-  this.collisionOld = function() { 
+  this.collisionOld = function() {
     p = p1;
     if(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
       this.angle += PI/2;
@@ -87,8 +66,31 @@ function Disk() {
       this.move();
     }
   }
-  
-  this.collision = function() { 
+ 
+  this.reflect = function(wAng){
+    var aIn, aOut, diff;
+    aIn = this.angle + PI;
+    diff = aIn - wAng;
+    aOut = wAng + PI - diff;
+    return aOut;
+  }
+ 
+  this.collision = function() {
+    p = p1;
+    if(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
+      //this.angle += PI/2;
+      //var angl = atan(p.y - this.y/p.x - this.x) + PI;
+      //this.angle += this.reflect(angl);
+      this.angle = this.reflect(atan2(p.y - this.y, p.x - this.x) +PI/2);
+      this.speed = 5;
+      //background(255, 255, 0);
+    }
+    while(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
+      this.move();
+    }
+  }
+ 
+  /*this.collision = function() {
     p = p1;
     if(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
       var vxP1, vyP1, vxD, vYD, vxR, vyR;
@@ -104,7 +106,7 @@ function Disk() {
       print("4|"+vyD+"|");
       print("5|"+vxR+"|");
       print("6|"+vyR+"|");
-      
+ 
       this.angle = atan2(vyR, vxR);
       debugPrints();
       noLoop();
@@ -115,12 +117,12 @@ function Disk() {
     while(sqrt(((this.x-p.x)*(this.x-p.x)) + ((this.y-p.y)*(this.y-p.y))) < (this.radius + p.radius)/2) {
       this.move();
     }
-  }
+  }*/
 };
  
 function Player() {
   this.x = width/2;
-  this.y = height/2;
+  this.y = width/2;
   this.old_x = this.x;
   this.old_y = this.y;
   this.radius = 50;
@@ -136,23 +138,23 @@ function Player() {
     ellipse(this.x, this.y, this.radius, this.radius);
     this.showDirection();
   }
-  
+ 
   this.showDirection = function() {
     stroke(255, 255, 0);
     line(this.x, this.y, this.x+cos(this.getAngle())*100, this.y+sin(this.getAngle())*100);
   }
-  
-  
+ 
+ 
   this.getAngle = function() {
     return atan2(this.y - this.old_y, this.x - this.old_x);
-
+ 
   }
-  
+ 
   this.getSpeed = function() {
     return sqrt(((this.x-this.old_x)*(this.x-this.old_x)) + ((this.y-this.old_y)*(this.y-this.old_y)));
   }
 };
-
+ 
 function mousePressed() {
   noLoop();
 }
@@ -161,7 +163,7 @@ function mouseReleased() {
   loop();
 }
 */
-
+ 
 function debugPrints() {
     text("Sin:"+sin(disk.angle), 10, 10);
     text("Cos:"+cos(disk.angle), 10, 30);
