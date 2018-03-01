@@ -1,14 +1,16 @@
-var p1, disk, pause;
+var p1, disk, pause, scoreP1, scoreCPU;
  
 function setup() {
   createCanvas(800, 500);
   p1 = new Player();
   disk = new Disk();
   pause = false;
+  scoreP1 = 0;
+  scoreCPU = 0;
 }
  
 function draw() {
-  background(0);
+  drawBoard();
   disk.move();
   p1.update();
   fill(0, 255, 0);
@@ -16,7 +18,7 @@ function draw() {
  
   fill(255);
   disk.show();
-  debugPrints();
+  //debugPrints();
 }
  
 function Disk() {
@@ -32,11 +34,19 @@ function Disk() {
     if(this.speed > 0) {
       this.speed -= this.speed*this.decSpd;
     }
-    if(this.speed <=0) {
+    if(this.speed <= 0.05) {
       this.speed = 0;
     }
  
     if(this.x + this.speed * cos(this.angle) < this.radius/2 || this.x + this.speed * cos(this.angle) > width-this.radius/2) {
+      if(this.y >= height/3 && this.y <= height*2/3) {
+        if(this.x > width/2) {
+          scoreP1++;
+        }else {
+          scoreCPU++;
+        }
+        resetPositions();
+      }
       this.angle = this.reflect(PI/2);
     }
     if(this.y + this.speed * sin(this.angle) < this.radius/2 || this.y + this.speed * sin(this.angle) > height-this.radius/2) {
@@ -50,12 +60,14 @@ function Disk() {
   }
  
   this.show = function() {
+    fill(255, 0, 0);
+    stroke(0);
     ellipse(this.x, this.y, this.radius, this.radius);
-    this.showDirection();
+    //this.showDirection();
   }
  
   this.showDirection = function() {
-    stroke(255, 255, 0);
+    stroke(255, 0, 0);
     line(this.x, this.y, this.x+cos(this.angle)*100, this.y+sin(this.angle)*100);
   }
  
@@ -78,9 +90,9 @@ function Disk() {
       this.y += this.speed * sin(this.angle);
     }
   }
-  
+ 
   this.collisionForce = function() {
-    var vxP1, vyP1, vxD, vyD;  
+    var vxP1, vyP1, vxD, vyD;
     vxP1 = cos(p1.getAngle()) * p1.getSpeed();
     vyP1 = sin(p1.getAngle()) * p1.getSpeed();
     vxD = cos(this.angle) * this.speed;
@@ -122,16 +134,16 @@ function Player() {
       this.old_y = this.y;
       this.x = mouseX;
       this.y = mouseY;
-    }      
+    }
   }
  
   this.show = function() {
     ellipse(this.x, this.y, this.radius, this.radius);
-    this.showDirection();
+    //this.showDirection();
   }
  
   this.showDirection = function() {
-    stroke(255, 255, 0);
+    stroke(255, 0, 0);
     line(this.x, this.y, this.x+cos(this.getAngle())*100, this.y+sin(this.getAngle())*100);
   }
  
@@ -144,21 +156,11 @@ function Player() {
   this.getSpeed = function() {
     return sqrt(((this.x-this.old_x)*(this.x-this.old_x)) + ((this.y-this.old_y)*(this.y-this.old_y)));
   }
-  
+ 
   this.getSpeed2 = function() {
     return sqrt(((mouseX-this.x)*(mouseX-this.x)) + ((mouseY-this.y)*(mouseY-this.y)));
   }
 };
- 
-function mousePressed() {
-  if(pause) {
-    pause = false;
-    loop();
-  }else {
-    pause = true;
-    noLoop();
-  }
-}
  
 function collisionP1Disk() {
   if(sqrt(((disk.x-p1.x)*(disk.x-p1.x)) + ((disk.y-p1.y)*(disk.y-p1.y))) < (disk.radius + p1.radius)/2) {
@@ -168,13 +170,66 @@ function collisionP1Disk() {
   }
 }
  
+function drawBoard() {
+  background(255);
+  noFill();
+  stroke(0);
+  strokeWeight(10);
+  rect(0, 0, width, height);
+  fill(0);
+  rect(0, height*1/3, 10, height*1/3);
+  rect(width-10, height*1/3, 10, height*1/3);
+  noFill();
+  stroke(0, 0, 255);
+  strokeWeight(3);
+  ellipse(width/2, height/2, 75, 75);
+  ellipse(width*1/5, height*2/7, 50, 50);
+  ellipse(width*4/5, height*2/7, 50, 50);
+  ellipse(width*1/5, height*5/7, 50, 50);
+  ellipse(width*4/5, height*5/7, 50, 50);
+  line(width/2, 0, width/2, height/2-37.5);
+  line(width/2, height/2+37.5, width/2, height);
+ 
+  //placar
+  textSize(30);
+  stroke(0);
+  fill(0);
+  textAlign(CENTER);
+  text(scoreP1 + " x " + scoreCPU, width/2+1, 50);
+  textAlign(LEFT);
+  strokeWeight(1);
+}
+ 
+function resetPositions() {
+  disk.x = width/2;
+  disk.y = height/2;
+  disk.angle = random(0, 2*PI);
+  disk.speed = random(3, 7);
+  p1.x = 0;
+  p1.y = 0;
+}
+ 
 function debugPrints() {
-    text("Sin:"+sin(disk.angle), 10, 10);
-    text("Cos:"+cos(disk.angle), 10, 30);
-    text("velY:"+sin(disk.angle)*disk.speed, 10, 50);
-    text("velX:"+cos(disk.angle)*disk.speed, 10, 70);
-    text("spd:"+disk.speed, 10, 90);
-    text("angle:"+disk.angle, 10, 110);
-    text("playerAngle:"+p1.getAngle(), 10, 130);
-    text("playerSpeed:"+p1.getSpeed(), 10, 150);
+  textSize(12);
+  stroke(0);
+  fill(0);
+  text("Sin:"+sin(disk.angle), 10, 15);
+  text("Cos:"+cos(disk.angle), 10, 35);
+  text("velY:"+sin(disk.angle)*disk.speed, 10, 55);
+  text("velX:"+cos(disk.angle)*disk.speed, 10, 75);
+  text("spd:"+disk.speed, 10, 95);
+  text("angle:"+disk.angle, 10, 115);
+  text("playerAngle:"+p1.getAngle(), 10, 135);
+  text("playerSpeed:"+p1.getSpeed(), 10, 155);
+  fill(255);
+}
+ 
+function mousePressed() {
+  if(pause) {
+    pause = false;
+    loop();
+  }else {
+    pause = true;
+    noLoop();
+  }
 }
