@@ -109,13 +109,31 @@ function Player() {
   this.radius = 50;
  
   this.update = function() {
+    var pFinx, pIniy;
+    pFinx = mouseX;
+    pFiny = mouseY;
+    
+    //limites
+    if(pFinx - this.radius/2 < 0) {
+      pFinx = this.radius/2;
+    }
+    if(pFiny - this.radius/2 < 0) {
+      pFiny = this.radius/2;
+    }
+    if(pFinx + this.radius/2 > width/2) {
+      pFinx = width/2 - this.radius/2;
+    }
+    if(pFiny + this.radius/2 > height) {
+      pFiny = height - this.radius/2;
+    }
+    
     var iniSpd = this.getSpeed2();
-    var dist = sqrt(((this.x-mouseX)*(this.x-mouseX)) + ((this.y-mouseY)*(this.y-mouseY)));
-    var angl = atan2(this.x-mouseX, this.y-mouseY);
+    var dist = sqrt(((this.x-pFinx)*(this.x-pFinx)) + ((this.y-pFiny)*(this.y-pFiny)));
+    var angl = atan2(this.x-pFinx, this.y-pFiny);
     if(dist > 2) {
       var dx, dy, qtd;
-      dx = mouseX - this.x;
-      dy = mouseY - this.y;
+      dx = pFinx - this.x;
+      dy = pFiny - this.y;
       qtd = dist/2;
       for(var i=0 ; i<qtd ; i++) {
         this.old_x = this.x;
@@ -132,8 +150,8 @@ function Player() {
     }else {
       this.old_x = this.x;
       this.old_y = this.y;
-      this.x = mouseX;
-      this.y = mouseY;
+      this.x = pFinx;
+      this.y = pFiny;
     }
   }
  
