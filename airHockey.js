@@ -1,8 +1,12 @@
-var p1, disk, pause, scoreP1, scoreCPU;
+var p1, pCpu, disk, pause, scoreP1, scoreCPU;
+
+PlayerP1.prototype = new Player();
+PlayerCPU.prototype = new Player();
  
 function setup() {
   createCanvas(800, 500);
-  p1 = new Player();
+  p1 = new PlayerP1();
+  pCpu = new PlayerCPU();
   disk = new Disk();
   pause = false;
   scoreP1 = 0;
@@ -13,10 +17,16 @@ function draw() {
   drawBoard();
   disk.move();
   p1.update();
-  fill(0, 255, 0);
+  pCpu.update();
+  
+  
+  fill(52, 247, 47);
   p1.show();
  
-  fill(255);
+  fill(255, 44, 38);
+  pCpu.show();
+  
+  fill(255, 127, 39);
   disk.show();
   //debugPrints();
 }
@@ -24,8 +34,8 @@ function draw() {
 function Disk() {
   this.x = width/2;
   this.y = height/2;
-  this.speed = 5;
-  this.angle = 0.5;
+  this.angle = random(0, 2*PI);
+  this.speed = random(3, 7);
   this.radius = 25;
   this.decSpd = 0.001;
   this.bounce = 0.9;
@@ -52,7 +62,7 @@ function Disk() {
     if(this.y + this.speed * sin(this.angle) < this.radius/2 || this.y + this.speed * sin(this.angle) > height-this.radius/2) {
       this.angle = this.reflect(PI);
     }
-    if(collisionP1Disk()) {
+    if(collisionP1Disk() || collisionPCpuDisk()) {
       this.collision();
     }
     this.x += this.speed * cos(this.angle);
@@ -60,7 +70,6 @@ function Disk() {
   }
  
   this.show = function() {
-    fill(255, 0, 0);
     stroke(0);
     ellipse(this.x, this.y, this.radius, this.radius);
     //this.showDirection();
@@ -81,11 +90,22 @@ function Disk() {
  
   this.collision = function() {
     p = p1;
+    //colisão com Player1
     if(collisionP1Disk()) {
       this.angle = this.reflect(atan2(p.y - this.y, p.x - this.x) +PI/2);
       this.speed = this.collisionForce() * this.bounce;
     }
     while(collisionP1Disk()) {
+      this.x += this.speed * cos(this.angle);
+      this.y += this.speed * sin(this.angle);
+    }
+    p = pCpu;
+    //colisão com PlayerCPU
+    if(collisionPCpuDisk()) {
+      this.angle = this.reflect(atan2(p.y - this.y, p.x - this.x) +PI/2);
+      this.speed = this.collisionForce() * this.bounce;
+    }
+    while(collisionPCpuDisk()) {
       this.x += this.speed * cos(this.angle);
       this.y += this.speed * sin(this.angle);
     }
@@ -108,6 +128,30 @@ function Player() {
   this.old_y = this.y;
   this.radius = 50;
  
+  this.show = function() {
+    ellipse(this.x, this.y, this.radius, this.radius);
+    //this.showDirection();
+  }
+ 
+  this.showDirection = function() {
+    stroke(255, 0, 0);
+    line(this.x, this.y, this.x+cos(this.getAngle())*100, this.y+sin(this.getAngle())*100);
+  }
+ 
+ 
+  this.getAngle = function() {
+    return atan2(this.y - this.old_y, this.x - this.old_x);
+ 
+  }
+ 
+  this.getSpeed = function() {
+    return sqrt(((this.x-this.old_x)*(this.x-this.old_x)) + ((this.y-this.old_y)*(this.y-this.old_y)));
+  }
+};
+
+function PlayerP1() {
+  this.x = width*4/5;
+  this.y = height/2;
   this.update = function() {
     var pFinx, pIniy;
     pFinx = mouseX;
@@ -154,34 +198,79 @@ function Player() {
       this.y = pFiny;
     }
   }
- 
-  this.show = function() {
-    ellipse(this.x, this.y, this.radius, this.radius);
-    //this.showDirection();
-  }
- 
-  this.showDirection = function() {
-    stroke(255, 0, 0);
-    line(this.x, this.y, this.x+cos(this.getAngle())*100, this.y+sin(this.getAngle())*100);
-  }
- 
- 
-  this.getAngle = function() {
-    return atan2(this.y - this.old_y, this.x - this.old_x);
- 
-  }
- 
-  this.getSpeed = function() {
-    return sqrt(((this.x-this.old_x)*(this.x-this.old_x)) + ((this.y-this.old_y)*(this.y-this.old_y)));
-  }
- 
+  
   this.getSpeed2 = function() {
     return sqrt(((mouseX-this.x)*(mouseX-this.x)) + ((mouseY-this.y)*(mouseY-this.y)));
+  }
+};
+
+function PlayerCPU() {
+  this.x = width*4/5;
+  this.y = height/2;
+  this.speed = 3;
+  
+  this.update = function() {
+    var pFinx, pIniy;
+    
+    pFinx = this.x + cos(atan2(disk.y-this.y, disk.x-this.x)) * this.speed;
+    pFiny = this.y + sin(atan2(disk.y-this.y, disk.x-this.x)) * this.speed;
+    //limites
+    if(pFinx - this.radius/2 < width/2) {
+      pFinx = width/2 + this.radius/2;
+    }
+    if(pFiny - this.radius/2 < 0) {
+      pFiny = this.radius/2;
+    }
+    if(pFinx + this.radius/2 > width) {
+      pFinx = width - this.radius/2;
+    }
+    if(pFiny + this.radius/2 > height) {
+      pFiny = height - this.radius/2;
+    }
+    
+    var iniSpd = this.getSpeed2();
+    var dist = sqrt(((this.x-pFinx)*(this.x-pFinx)) + ((this.y-pFiny)*(this.y-pFiny)));
+    var angl = atan2(this.x-pFinx, this.y-pFiny);
+    if(dist > 2) {
+      var dx, dy, qtd;
+      dx = pFinx - this.x;
+      dy = pFiny - this.y;
+      qtd = dist/2;
+      for(var i=0 ; i<qtd ; i++) {
+        this.old_x = this.x;
+        this.old_y = this.y;
+        this.x += dx/qtd;
+        this.y += dy/qtd;
+        while(collisionPCpuDisk()) {
+          disk.angle = atan2(disk.y-this.y, disk.x-this.x);
+          disk.speed = (iniSpd/2)*disk.bounce;
+          disk.x = this.x+cos(disk.angle)*((disk.radius + this.radius)/2+1);
+          disk.y = this.y+sin(disk.angle)*((disk.radius + this.radius)/2+1);
+        }
+      }
+    }else {
+      this.old_x = this.x;
+      this.old_y = this.y;
+      this.x = pFinx;
+      this.y = pFiny;
+    }
+  }
+  
+  this.getSpeed2 = function() {
+    return sqrt(((this.old_x-this.x)*(this.old_x-this.x)) + ((this.old_y-this.y)*(this.old_y-this.y)));
   }
 };
  
 function collisionP1Disk() {
   if(sqrt(((disk.x-p1.x)*(disk.x-p1.x)) + ((disk.y-p1.y)*(disk.y-p1.y))) < (disk.radius + p1.radius)/2) {
+    return true;
+  }else {
+    return false;
+  }
+}
+
+function collisionPCpuDisk() {
+  if(sqrt(((disk.x-pCpu.x)*(disk.x-pCpu.x)) + ((disk.y-pCpu.y)*(disk.y-pCpu.y))) < (disk.radius + pCpu.radius)/2) {
     return true;
   }else {
     return false;
@@ -223,8 +312,10 @@ function resetPositions() {
   disk.y = height/2;
   disk.angle = random(0, 2*PI);
   disk.speed = random(3, 7);
-  p1.x = 0;
-  p1.y = 0;
+  p1.x = width*4/5;
+  p1.y = height/2;
+  pCpu.x = width*4/5;
+  pCpu.y = height/2;
 }
  
 function debugPrints() {
