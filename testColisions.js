@@ -10,6 +10,7 @@ function setup() {
 
 function draw() {
   background(0);
+  showInfo();
   if(mode) {
     v1.angle = map(mouseX, 0, width, 0, 2*PI);
     
@@ -21,20 +22,24 @@ function draw() {
   stroke(255);//parede branca
   drawVector(wall);
   stroke(0, 255, 0);//in verde
-  drawVector(v1);
+  drawVector2(v1);
   stroke(0, 0, 255);//out azul
-  drawVector(v0);
+  drawVector2(v0);
 }
 
 function drawVector(w) {
   line(w.x-cos(w.angle)*w.len, w.y-sin(w.angle)*w.len, w.x+cos(w.angle)*w.len, w.y+sin(w.angle)*w.len);
 }
 
+function drawVector2(w) {
+  line(w.x-cos(w.angle)*w.len, w.y-sin(w.angle)*w.len, width/2, height/2);
+}
+
 function reflect(v, w) {
   var aIn, aOut, diff;
   aIn = v.angle + PI;
   diff = aIn - w.angle;
-  aOut = w.angle + PI -diff;
+  aOut = w.angle - diff;
   print("aIn: "+v.angle);
   print("aOut: "+aOut);
   return aOut;
@@ -46,6 +51,16 @@ function Vector(px, py, ang, l){
     this.angle = ang;
     this.len = l;
 };
+
+function showInfo() {
+    fill(255);
+    stroke(0);
+    text("Verde -> angulo de entrada", 10, 10);
+    text("Azul -> angulo de saida", 10, 30);
+    text("Branco -> Superficie de colisao", 10, 50);
+    text("Mova o mouse em x para alterar o angulo", 10, 70);
+    text("Clique para alterar entre: [Ang. Entrada / Superficie de colisao]", 10, 90);
+}
 
 function mousePressed() {
   if(mode) {

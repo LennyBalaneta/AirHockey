@@ -212,7 +212,8 @@ function PlayerCPU() {
   this.update = function() {
     var pFinx, pIniy;
     
-    pFinx = this.x + cos(atan2(disk.y-this.y, disk.x-this.x)) * this.speed;
+    pFinx = this.x;
+    //pFinx = this.x + cos(atan2(disk.y-this.y, disk.x-this.x)) * this.speed;
     pFiny = this.y + sin(atan2(disk.y-this.y, disk.x-this.x)) * this.speed;
     //limites
     if(pFinx - this.radius/2 < width/2) {
@@ -312,8 +313,8 @@ function resetPositions() {
   disk.y = height/2;
   disk.angle = random(0, 2*PI);
   disk.speed = random(3, 7);
-  p1.x = width*4/5;
-  p1.y = height/2;
+  p1.x = mouseX;
+  p1.y = mouseY;
   pCpu.x = width*4/5;
   pCpu.y = height/2;
 }
